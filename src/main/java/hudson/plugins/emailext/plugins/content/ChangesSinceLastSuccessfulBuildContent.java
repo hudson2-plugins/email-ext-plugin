@@ -3,16 +3,6 @@ package hudson.plugins.emailext.plugins.content;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Result;
-import hudson.plugins.emailext.EmailType;
-import hudson.plugins.emailext.ExtendedEmailPublisher;
-import hudson.plugins.emailext.Util;
-import hudson.plugins.emailext.Util.PrintfSpec;
-import hudson.plugins.emailext.plugins.EmailContent;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ChangesSinceLastSuccessfulBuildContent
     extends AbstractChangesSinceContent

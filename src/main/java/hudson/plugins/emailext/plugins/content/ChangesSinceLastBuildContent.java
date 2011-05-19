@@ -112,7 +112,7 @@ public class ChangesSinceLastBuildContent
                         Method getDateMethod = entry.getClass().getMethod( "getDate" );
                         buf.append( getDateMethod.invoke( entry ) );
                     }
-                    catch ( Exception e )
+                    catch ( Exception e )//NOPMD //TODO resolve pmd error
                     {
                         // If it is not implemented or any other problem, swallow the %d
                     }
@@ -160,7 +160,7 @@ public class ChangesSinceLastBuildContent
                         Method getRevisionMethod = entry.getClass().getMethod( "getRevision" );
                         buf.append( getRevisionMethod.invoke( entry ) );
                     }
-                    catch ( Exception e )
+                    catch ( Exception e ) //NOPMD  //TODO resolve pmd error
                     {
                         // If it is not implemented or any other problem, swallow the %r
                     }
