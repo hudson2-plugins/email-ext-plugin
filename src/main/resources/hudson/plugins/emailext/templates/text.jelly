@@ -10,11 +10,11 @@ Build duration: ${build.durationString}
 <j:set var="changeSet" value="${build.changeSet}" />
 <j:if test="${changeSet!=null}">
 CHANGE SET <j:set var="hadChanges" value="false" />
-      <j:forEach var="cs" items="${changeSet.logs}" varStatus="loop">
+      <j:forEach var="entry" items="${changeSet.logs}" varStatus="loop">
         <j:set var="hadChanges" value="true" />
-        <j:set var="aUser" value="${cs.hudsonUser}"/>
-  &#10;Revision ${cs.revision} by <j:choose><j:when test="${aUser!=null}">${aUser.displayName}: </j:when><j:otherwise>${cs.user}: </j:otherwise></j:choose>(${cs.msgAnnotated})
-<j:forEach var="p" items="${cs.paths}">&#10;  change: ${p.editType.name}   ${p.value}</j:forEach>
+        <j:set var="aUser" value="${entry.author}"/>
+  &#10;Revision ${entry.revision} by <j:choose><j:when test="${aUser!=null}">${aUser.displayName}: </j:when><j:otherwise>${entry.user}: </j:otherwise></j:choose>(${entry.msgAnnotated})
+<j:forEach var="p" items="${entry.affectedFiles}">&#10;  change: ${p.editType.name}   ${p.path}</j:forEach>
       </j:forEach>      
       <j:if test="${!hadChanges}">
 No changes

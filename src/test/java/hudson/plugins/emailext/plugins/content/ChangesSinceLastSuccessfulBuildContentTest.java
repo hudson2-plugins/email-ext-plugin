@@ -217,8 +217,7 @@ public class ChangesSinceLastSuccessfulBuildContentTest {
         return changes;
     }
 
-    public class ChangeLogEntry
-        extends ChangeLogSet.Entry
+    public class ChangeLogEntry extends ChangeLogSet.Entry
     {
         final String message;
 
@@ -230,13 +229,11 @@ public class ChangesSinceLastSuccessfulBuildContentTest {
             this.author = author;
         }
 
-        @Override
         public String getMsg()
         {
             return message;
         }
 
-        @Override
         public User getAuthor()
         {
             User user = mock( User.class );
@@ -244,7 +241,10 @@ public class ChangesSinceLastSuccessfulBuildContentTest {
             return user;
         }
 
-        @Override
+        public String getUser() {
+            return getAuthor().getDisplayName();
+        }
+
         public Collection<String> getAffectedPaths()
         {
             return new ArrayList<String>()
