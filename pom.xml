@@ -216,15 +216,9 @@
     </repositories>
 
     <scm>
-        <connection>scm:git://github.com/hudson-plugins/email-ext-plugin.git</connection>
-        <developerConnection>scm:git@github.com:hudson-plugins/email-ext-plugin.git</developerConnection>
-        <url>https://github.com/hudson-plugins/email-ext-plugin</url>
+        <connection>scm:git:git://github.com/hudson-plugins/email-ext-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:hudson-plugins/email-ext-plugin.git</developerConnection>
+        <url>https://github.com/hudson-plugins/email-ext-plugin.git</url>
     </scm>
 
-    <distributionManagement>
-        <repository>
-            <id>java.net-m2-repository</id>
-            <url>http://maven.hudson-labs.org:8081/content/repositories/releases/</url>
-        </repository>
-    </distributionManagement>
 </project>
