@@ -34,7 +34,7 @@ public class ExtendedEmailTriggerTest
         publisher.defaultContent = "%DEFAULT_CONTENT";
 
         project = createFreeStyleProject();
-        project.getPublishersList().add( publisher );
+        project.addPublisher( publisher );
     }
 
     public void tearDown()
