@@ -32,10 +32,13 @@ import java.util.logging.Logger;
 import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 /**
  * {@link Publisher} that sends notification e-mail.
@@ -114,6 +117,21 @@ public class ExtendedEmailPublisher extends Notifier {
      * The default body of the emails for this project.  ($PROJECT_DEFAULT_BODY)
      */
     public String defaultContent;
+
+    /**
+     * The project wide set of attachments.
+     */
+    public String attachmentsPattern;
+
+     /**
+     * True to attach the log from the build to the email.
+     */
+    public boolean attachBuildLog;
+
+    /**
+     * True to compress the log from the build before attaching to the email
+     */
+    public boolean compressBuildLog;
 
     /**
      * Get the list of configured email triggers for this project.
@@ -260,12 +278,21 @@ public class ExtendedEmailPublisher extends Notifier {
 
         // Set the contents of the email
 
+        // Set the contents of the email
+        msg.addHeader("X-Hudson-Job", build.getProject().getDisplayName());
+        if (build.getResult() != null) {
+            msg.addHeader("X-Hudson-Result", build.getResult().toString());
+        }
+
         msg.setSentDate(new Date());
 
         setSubject(type, build, msg);
 
-        setContent(type, build, msg);
-
+        Multipart multipart = new MimeMultipart();
+        MimeBodyPart bp1 = new MimeBodyPart();
+        setContent(type, build, bp1);
+        multipart.addBodyPart(bp1);
+        
         EnvVars env = build.getEnvironment(listener);
 
         // Get the recipients from the global list of addresses
@@ -314,6 +341,18 @@ public class ExtendedEmailPublisher extends Notifier {
             }
         }
 
+        final ExtendedEmailPublisherContext context = new ExtendedEmailPublisherContext(this, build, null, listener);
+
+        AttachmentUtils attachments = new AttachmentUtils(attachmentsPattern);
+        attachments.attach(multipart, context);
+
+        if (attachBuildLog || type.getAttachBuildLog()) {
+            listener.getLogger().println("Request made to attach build log");
+            AttachmentUtils.attachBuildLog(context, multipart, compressBuildLog);
+        }
+        
+        msg.setContent(multipart);
+
         return msg;
     }
 
@@ -322,8 +361,8 @@ public class ExtendedEmailPublisher extends Notifier {
         String subject = new ContentBuilder().transformText(type.getSubject(), this, type, build);
         msg.setSubject(subject, CHARSET);
     }
-
-    private void setContent(final EmailType type, final AbstractBuild<?, ?> build, MimeMessage msg)
+    
+    private void setContent(final EmailType type, final AbstractBuild<?, ?> build, MimeBodyPart bp)
         throws MessagingException {
         final String text = new ContentBuilder().transformText(type.getBody(), this, type, build);
 
@@ -339,7 +378,7 @@ public class ExtendedEmailPublisher extends Notifier {
         }
         messageContentType += "; charset=" + CHARSET;
 
-        msg.setContent(text, messageContentType);
+        bp.setContent(text, messageContentType);
     }
 
     private static void addAddressesFromRecipientList(Set<InternetAddress> addresses, String recipientList,

@@ -72,7 +72,39 @@
 			</j:otherwise>
 		</j:choose>
     </f:entry>
+
+    <!-- This for attachments -->
+    <f:entry title="Attachments"
+            help="/plugin/email-ext/help/projectConfig/attachments.html">
+        <j:choose>
+     		<j:when test="${instance.configured}">
+	    		<input class="setting-input" name="project_attachments"
+            		type="text" value="${instance.attachmentsPattern}"/>
+            </j:when>
+            <j:otherwise>
+            	<input class="setting-input" name="project_attachments"
+            		type="text" value=""/>
+            </j:otherwise>
+        </j:choose>
+    </f:entry>
     
+	<!-- This is attaching the build log. -->
+    <f:entry title="Content Type"
+             help="/plugin/email-ext/help/projectConfig/attachBuildLog.html">
+      <select class="setting-input"
+              name="project_attach_buildlog">
+        <f:option value="0"
+                  selected="${!instance.attachBuildLog}"
+          >Do Not Attach Build Log</f:option>
+        <f:option value="1"
+                  selected="${instance.attachBuildLog && !instance.compressBuildLog}"
+          >Attach Build Log</f:option>
+        <f:option value="2"
+                  selected="${instance.attachBuildLog && instance.compressBuildLog}"
+          >Compress and Attach Build Log</f:option>
+      </select>
+    </f:entry>
+
 	<!-- This is the help section.  It displays a bunch of dynamic help for all content tokens. -->
 	<tr>
 		<td></td>

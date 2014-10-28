@@ -26,7 +26,23 @@ public class EmailType {
 	 * Specifies whether or not we should send this email to the developer/s
 	 * who made changes.
 	 */
-	private boolean sendToDevelopers;
+    
+    /**
+     * Pattern for attachments to be sent as part of this email type.
+     */
+    private String attachmentsPattern;
+
+    /**
+     * True to attach the build log to the email
+     */
+    private boolean attachBuildLog;
+
+    /**
+     * True to compress the build log before attaching it to the email
+     */
+    private boolean compressBuildLog;
+
+    private boolean sendToDevelopers;
 	
 	/**
 	 * Specifies whether or not we should send this email to all developers
@@ -44,6 +60,9 @@ public class EmailType {
 		subject = "";
 		body = "";
 		recipientList = "";
+        attachmentsPattern = "";
+        attachBuildLog = false;
+        compressBuildLog = false;
 		sendToDevelopers = false;
 		includeCulprits = false;
 		sendToRecipientList = false;
@@ -65,6 +84,30 @@ public class EmailType {
 		this.body = body;
 	}
 	
+    public String getAttachmentsPattern() {
+        return attachmentsPattern != null ? attachmentsPattern.trim() : attachmentsPattern;
+    }
+
+    public void setAttachmentsPattern(String attachmentsPattern) {
+        this.attachmentsPattern = attachmentsPattern;
+    }
+
+    public boolean getAttachBuildLog() {
+        return attachBuildLog;
+    }
+
+    public boolean getCompressBuildLog() {
+        return compressBuildLog;
+    }
+
+    public void setAttachBuildLog(boolean attachBuildLog) {
+        this.attachBuildLog = attachBuildLog;
+    }
+
+    public void setCompressBuildLog(boolean compressBuildLog) {
+        this.compressBuildLog = compressBuildLog;
+    }
+
 	public boolean getSendToDevelopers() {
 		return sendToDevelopers;
 	}

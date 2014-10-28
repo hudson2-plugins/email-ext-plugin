@@ -83,6 +83,11 @@ public class ExtendedEmailPublisherDescriptor
      */
     private String defaultBody;
 
+    /**
+     * The maximum size of all the attachments (in bytes)
+     */
+    private long maxAttachmentSize = -1;
+    
     private boolean overrideGlobalSettings;
 
     @Override
@@ -209,6 +214,14 @@ public class ExtendedEmailPublisherDescriptor
         return defaultBody;
     }
 
+    public long getMaxAttachmentSize() {
+        return maxAttachmentSize;
+    }
+    
+    public long getMaxAttachmentSizeMb() {
+        return maxAttachmentSize / (1024 * 1024);
+    }
+    
     public boolean getOverrideGlobalSettings()
     {
         return overrideGlobalSettings;
@@ -233,6 +246,10 @@ public class ExtendedEmailPublisherDescriptor
         m.defaultSubject = formData.getString( "project_default_subject" );
         m.defaultContent = formData.getString( "project_default_content" );
         m.configuredTriggers = new ArrayList<EmailTrigger>();
+        m.attachmentsPattern = formData.getString( "project_attachments" );
+        String abl = formData.getString( "project_attach_buildlog" ).trim();
+        m.attachBuildLog = !"0".equals(abl);
+        m.compressBuildLog = "2".equals(abl);
 
         // Create a new email trigger for each one that is configured
         for ( String mailerId : ExtendedEmailPublisher.EMAIL_TRIGGER_TYPE_MAP.keySet() )
@@ -319,6 +336,9 @@ public class ExtendedEmailPublisherDescriptor
         defaultSubject = nullify( req.getParameter( "ext_mailer_default_subject" ) );
         defaultBody = nullify( req.getParameter( "ext_mailer_default_body" ) );
 
+        // convert the value into megabytes (1024 * 1024 bytes)
+        maxAttachmentSize = nullify(req.getParameter("ext_mailer_max_attachment_size")) != null ?
+            (Long.parseLong(req.getParameter("ext_mailer_max_attachment_size")) * 1024 * 1024) : -1;
         overrideGlobalSettings = req.getParameter( "ext_mailer_override_global_settings" ) != null;
 
         save();
@@ -360,4 +380,19 @@ public class ExtendedEmailPublisherDescriptor
         return new EmailRecepientUtils().validateFormRecipientList( value );
 		}
 
+    
+    public FormValidation doMaxAttachmentSizeCheck(@QueryParameter final String value)
+            throws IOException, ServletException {
+        try {
+            String testValue = value.trim();
+            // we support an empty value (which means default)
+            // or a number
+            if(testValue.length() > 0) {
+                Long.parseLong(testValue);
+            }
+            return FormValidation.ok();
+        } catch (Exception e) {
+            return FormValidation.error(e.getMessage());
+        }
+    }
 	}

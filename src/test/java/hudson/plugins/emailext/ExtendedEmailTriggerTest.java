@@ -1,50 +1,21 @@
 package hudson.plugins.emailext;
 
 import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-import hudson.plugins.emailext.plugins.EmailTrigger;
 import hudson.plugins.emailext.plugins.trigger.FixedTrigger;
 import hudson.plugins.emailext.plugins.trigger.PreBuildTrigger;
 import hudson.plugins.emailext.plugins.trigger.StillFailingTrigger;
 import hudson.plugins.emailext.plugins.trigger.SuccessTrigger;
 import java.util.List;
 import org.jvnet.hudson.test.FailureBuilder;
-import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.mock_javamail.Mailbox;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.*;
 
-public class ExtendedEmailTriggerTest
-    extends HudsonTestCase
+public class ExtendedEmailTriggerTest extends BaseEmailTest
 {
-    private ExtendedEmailPublisher publisher;
-
-    private FreeStyleProject project;
-
-    public void setUp()
-        throws Exception
-    {
-        super.setUp();
-
-        publisher = new ExtendedEmailPublisher();
-        publisher.defaultSubject = "%DEFAULT_SUBJECT";
-        publisher.defaultContent = "%DEFAULT_CONTENT";
-
-        project = createFreeStyleProject();
-        project.addPublisher( publisher );
-    }
-
-    public void tearDown()
-        throws Exception
-    {
-        super.tearDown();
-
-        Mailbox.clearAll();
-    }
-
     public void testShouldNotSendEmailWhenNoTriggerEnabled()
         throws Exception
     {
@@ -173,16 +144,5 @@ public class ExtendedEmailTriggerTest
         assertThat( "Email should not have been triggered, so we should not see it in the logs.", build.getLog( 100 ),
                     not( hasItems( "Email was triggered for: " + StillFailingTrigger.TRIGGER_NAME ) ) );
         assertEquals( 0, Mailbox.get( "ashlux@gmail.com" ).size() );
-    }
-
-
-    private void addEmailType( EmailTrigger trigger )
-    {
-        trigger.setEmail( new EmailType()
-        {{
-                setRecipientList( "ashlux@gmail.com" );
-                setSubject( "Yet another Hudson email" );
-                setBody( "Boom goes the dynamite." );
-            }} );
     }
 }

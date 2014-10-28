@@ -2,21 +2,30 @@ package hudson.plugins.emailext.plugins;
 
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Hudson;
 import hudson.plugins.emailext.EmailExtException;
 import hudson.plugins.emailext.EmailType;
 import hudson.plugins.emailext.ExtendedEmailPublisher;
+import hudson.plugins.emailext.ExtendedEmailPublisherContext;
+import hudson.plugins.emailext.ExtendedEmailPublisherDescriptor;
 import hudson.plugins.emailext.Util;
 import hudson.tasks.Mailer;
 import hudson.tasks.Publisher;
-
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.java.sezpoz.Index;
+import net.java.sezpoz.IndexItem;
+import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
 /**
  * {@link Publisher} that sends notification e-mail.
@@ -59,6 +68,38 @@ public class ContentBuilder {
 		return EMAIL_CONTENT_TYPE_MAP.values();
 	}
 	
+    private static String noNull(String string) {
+        return string == null ? "" : string;
+    }
+    
+    public static String transformText(String origText, ExtendedEmailPublisherContext context, List<TokenMacro> additionalMacros) {
+        if(StringUtils.isBlank(origText)) return "";
+        
+        String defaultContent = Matcher.quoteReplacement(noNull(context.getPublisher().defaultContent));
+        String defaultSubject = Matcher.quoteReplacement(noNull(context.getPublisher().defaultSubject));
+        String defaultBody = Matcher.quoteReplacement(noNull(((ExtendedEmailPublisherDescriptor)context.getPublisher().getDescriptor()).getDefaultBody()));
+        String defaultExtSubject = Matcher.quoteReplacement(noNull(((ExtendedEmailPublisherDescriptor)context.getPublisher().getDescriptor()).getDefaultSubject()));
+        String newText = origText.replaceAll(
+                PROJECT_DEFAULT_BODY, defaultContent).replaceAll(
+                PROJECT_DEFAULT_SUBJECT, defaultSubject).replaceAll(
+                DEFAULT_BODY, defaultBody).replaceAll(
+                DEFAULT_SUBJECT, defaultExtSubject);
+        
+        try {
+            List<TokenMacro> macros = new ArrayList<TokenMacro>(getPrivateMacros());
+            if(additionalMacros != null)
+                macros.addAll(additionalMacros);
+            newText = TokenMacro.expandAll(context.getBuild(), context.getListener(), newText, false, macros);
+        } catch (MacroEvaluationException e) {
+            context.getListener().getLogger().println("Error evaluating token: " + e.getMessage());
+        } catch (Exception e) {
+            Logger.getLogger(ContentBuilder.class.getName()).log(Level.SEVERE, null, e);
+        }
+
+        return newText;
+    }
+
+    @Deprecated
 	public String transformText(String origText, ExtendedEmailPublisher publisher, EmailType type, AbstractBuild<?,?> build) {
 		String newText = origText.replaceAll(PROJECT_DEFAULT_BODY, Matcher.quoteReplacement(publisher.defaultContent))
 		 						 .replaceAll(PROJECT_DEFAULT_SUBJECT, Matcher.quoteReplacement(publisher.defaultSubject))
@@ -191,5 +232,23 @@ public class ContentBuilder {
 		}
 		
 	}
+    
+    private static List<TokenMacro> privateMacros;
 
+    public static List<TokenMacro> getPrivateMacros() {
+        if(privateMacros != null)
+            return privateMacros;
+        
+        privateMacros = new ArrayList<TokenMacro>();
+        ClassLoader cl = Hudson.getInstance().pluginManager.uberClassLoader;
+        for (final IndexItem<EmailToken, TokenMacro> item : Index.load(EmailToken.class, TokenMacro.class, cl)) {
+            try {
+                privateMacros.add(item.instance());
+            } catch (Exception e) {
+                // ignore errors loading tokens
+                continue;
+            }
+        }
+        return privateMacros;
+    }
 }
